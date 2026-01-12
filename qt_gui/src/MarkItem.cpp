@@ -1,5 +1,6 @@
 #include "MarkItem.h"
 
+#include <QColor>
 #include <QPainter>
 
 MarkItem::MarkItem(engine::Player p, const QRectF& cellRect)
@@ -10,8 +11,14 @@ MarkItem::MarkItem(engine::Player p, const QRectF& cellRect)
 void MarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) {
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    QPen pen(Qt::black);
-    pen.setWidthF(2.0);
+    // Цвета:
+    // X — красный, O — синий
+    QColor color = Qt::black;
+    if (player_ == engine::Player::X) color = QColor(220, 30, 30);
+    if (player_ == engine::Player::O) color = QColor(30, 60, 220);
+
+    QPen pen(color);
+    pen.setWidthF(2.4);
     painter->setPen(pen);
 
     const qreal m = rect_.width() * 0.18; // margin

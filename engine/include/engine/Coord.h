@@ -1,6 +1,6 @@
 #ifndef TIKTAKTOE_COORD_H
 #define TIKTAKTOE_COORD_H
-#pragma once
+
 
 #include <cstdint>
 #include <cstdlib>
@@ -8,7 +8,10 @@
 
 namespace engine {
 
-    struct Coord {
+    // Был struct — сделали class (по сути разницы нет, кроме доступа по умолчанию).
+    // Поля оставлены public, чтобы не переделывать весь проект.
+    class Coord {
+    public:
         int x = 0;
         int y = 0;
 
@@ -50,7 +53,7 @@ namespace engine {
         }
     };
 
-}
+} // namespace engine
 
 namespace std {
     template<>
@@ -59,6 +62,7 @@ namespace std {
             return engine::CoordHash{}(c);
         }
     };
-}
+} // namespace std
+
 
 #endif
