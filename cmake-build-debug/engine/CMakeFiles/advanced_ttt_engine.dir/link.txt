@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libadvanced_ttt_engine.a CMakeFiles/advanced_ttt_engine.dir/src/FiniteBoard.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/InfiniteBoard.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/CellValueFunction.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/RuleSet.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/Scoring.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/GameState.cpp.o CMakeFiles/advanced_ttt_engine.dir/src/AI.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libadvanced_ttt_engine.a

@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++ -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/advanced_ttt_tests.dir/test_main.cpp.o -o advanced_ttt_tests  ../engine/libadvanced_ttt_engine.a

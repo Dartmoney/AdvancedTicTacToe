@@ -1,0 +1,6 @@
+set(__QT_DEPLOY_TARGET_advanced_ttt_engine_FILE /Users/grigorijnikitin/tic-tac/AdvancedTicTacToe/cmake-build-debug/engine/libadvanced_ttt_engine.a)
+set(__QT_DEPLOY_TARGET_advanced_ttt_engine_TYPE STATIC_LIBRARY)
+set(__QT_DEPLOY_TARGET_advanced_ttt_FILE /Users/grigorijnikitin/tic-tac/AdvancedTicTacToe/cmake-build-debug/qt_gui/advanced_ttt)
+set(__QT_DEPLOY_TARGET_advanced_ttt_TYPE EXECUTABLE)
+set(__QT_DEPLOY_TARGET_advanced_ttt_tests_FILE /Users/grigorijnikitin/tic-tac/AdvancedTicTacToe/cmake-build-debug/tests/advanced_ttt_tests)
+set(__QT_DEPLOY_TARGET_advanced_ttt_tests_TYPE EXECUTABLE)
