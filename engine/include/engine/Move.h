@@ -1,23 +1,32 @@
 #ifndef TIKTAKTOE_MOVE_H
 #define TIKTAKTOE_MOVE_H
 #pragma once
+
 #include "Coord.h"
 #include "Player.h"
 
 namespace engine {
 
-    // Был struct — сделали class. Оставили public-поля, чтобы не ломать код.
-    // Добавили constexpr конструктор для удобства и корректной "constexpr-совместимости".
-    class Move {
+    // Move теперь class, и конструкторы сделаны именно перегрузками,
+    // а не default-аргументом (как ты и попросил).
+    class Move final {
     public:
         Coord coord{};
-        Player player = Player::None;
-        int cost = 0;
+        Player player{Player::None};
+        int cost{0};
 
         constexpr Move() noexcept = default;
-        constexpr Move(Coord c, Player p, int cost_ = 0) noexcept : coord(c), player(p), cost(cost_) {}
+
+        // Перегрузка: без стоимости
+        constexpr Move(Coord c, Player p) noexcept
+            : coord(c), player(p), cost(0) {}
+
+        // Перегрузка: со стоимостью
+        constexpr Move(Coord c, Player p, int cost_) noexcept
+            : coord(c), player(p), cost(cost_) {}
     };
 
 } // namespace engine
+
 
 #endif
