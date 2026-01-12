@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_MARKITEM_H
 #define TIKTAKTOE_MARKITEM_H
 #pragma once
@@ -23,4 +19,4 @@ private:
     QRectF rect_;
 };
 
-#endif //TIKTAKTOE_MARKITEM_H
+#endif

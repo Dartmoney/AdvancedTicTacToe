@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_SETTINGSPANEL_H
 #define TIKTAKTOE_SETTINGSPANEL_H
 #pragma once
@@ -82,4 +78,4 @@ private:
     QLabel* statsLabel_ = nullptr;
 };
 
-#endif //TIKTAKTOE_SETTINGSPANEL_H
+#endif

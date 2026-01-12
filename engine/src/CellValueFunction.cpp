@@ -88,4 +88,4 @@ std::string toString(CellValueFunction::Type t) {
     }
 }
 
-} // namespace engine
+}

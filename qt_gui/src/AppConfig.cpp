@@ -125,12 +125,11 @@ void applyBoolPair(const QCommandLineParser& parser, const char* onOpt, const ch
     if (parser.isSet(offOpt)) value = false;
 }
 
-} // namespace
+}
 
 AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
     AppConfig cfg;
 
-    // Reasonable defaults
     cfg.rules.topology = engine::BoardTopology::Finite;
     cfg.rules.width = 10;
     cfg.rules.height = 10;
@@ -158,7 +157,6 @@ AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
 
     cfg.cellSizePx = 40;
 
-    // INI config
     if (parser.isSet("config")) {
         cfg.configFile = parser.value("config");
         if (!QFileInfo::exists(cfg.configFile)) {
@@ -204,7 +202,6 @@ AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
 
             cfg.rules.initialBudget = s.value("initialBudget", static_cast<qlonglong>(cfg.rules.initialBudget)).toLongLong();
 
-            // weight.* and cost.*
             applyCellValueFunction(cfg.rules.weightFunction, s, "weight", cfg.warnings);
             applyCellValueFunction(cfg.rules.costFunction, s, "cost", cfg.warnings);
 
@@ -226,7 +223,6 @@ AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
         }
     }
 
-    // CLI overrides
     if (parser.isSet("topology")) {
         bool ok = false;
         cfg.rules.topology = parseTopology(parser.value("topology"), &ok);
@@ -278,7 +274,6 @@ AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
     if (parser.isSet("ai-radius")) cfg.aiCandidateRadius = parser.value("ai-radius").toInt();
     if (parser.isSet("cell-size")) cfg.cellSizePx = parser.value("cell-size").toInt();
 
-    // Validate rules
     const auto w = cfg.rules.validateAndFix();
     for (const auto& s : w) {
         cfg.warnings << QString::fromStdString(s);

@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_INFINITEBOARD_H
 #define TIKTAKTOE_INFINITEBOARD_H
 #pragma once
@@ -33,6 +29,6 @@ namespace engine {
         std::unordered_map<Coord, Player, CoordHash> cells_;
     };
 
-} // namespace engine
+}
 
-#endif //TIKTAKTOE_INFINITEBOARD_H
+#endif

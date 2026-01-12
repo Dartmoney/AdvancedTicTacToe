@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_GRIDITEM_H
 #define TIKTAKTOE_GRIDITEM_H
 #pragma once
@@ -26,4 +22,4 @@ private:
     bool drawBorder_ = true;
 };
 
-#endif //TIKTAKTOE_GRIDITEM_H
+#endif

@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_RULESET_H
 #define TIKTAKTOE_RULESET_H
 #pragma once
@@ -28,7 +24,7 @@ namespace engine {
         LineLengthMode lineMode = LineLengthMode::AtLeastN;
         bool countSubsegments = false;
 
-        // Win/goal rules
+        // Win rules
         bool classicWin = false;     // first who builds a line of length >= N wins immediately
         bool maximizeLines = true;   // at end-of-game: primary objective is to maximize number of lines
 
@@ -54,6 +50,6 @@ namespace engine {
     std::string toString(LineLengthMode m);
     std::string toString(CostMode m);
 
-} // namespace engine
+}
 
-#endif //TIKTAKTOE_RULESET_H
+#endif

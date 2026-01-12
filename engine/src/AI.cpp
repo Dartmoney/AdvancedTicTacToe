@@ -85,4 +85,4 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
     return bestMove;
 }
 
-} // namespace engine
+}

@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_MAINWINDOW_H
 #define TIKTAKTOE_MAINWINDOW_H
 #pragma once
@@ -67,4 +63,4 @@ private:
     std::unordered_map<engine::Coord, QGraphicsItem*, engine::CoordHash> markItems_;
 };
 
-#endif //TIKTAKTOE_MAINWINDOW_H
+#endif

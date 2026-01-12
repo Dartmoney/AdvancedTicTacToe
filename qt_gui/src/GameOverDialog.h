@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_GAMEOVERDIALOG_H
 #define TIKTAKTOE_GAMEOVERDIALOG_H
 #pragma once
@@ -19,4 +15,4 @@ private:
     void buildUi(const engine::GameState& state);
 };
 
-#endif //TIKTAKTOE_GAMEOVERDIALOG_H
+#endif

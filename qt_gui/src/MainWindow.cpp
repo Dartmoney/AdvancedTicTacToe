@@ -39,7 +39,6 @@ MainWindow::MainWindow(const AppConfig& cfg, QWidget* parent)
     connect(settings_, &SettingsPanel::redoRequested, this, &MainWindow::onRedoRequested);
     connect(settings_, &SettingsPanel::resetViewRequested, this, &MainWindow::onResetViewRequested);
 
-    // Apply initial config to UI
     settings_->setRulesToUi(cfg_.rules);
     settings_->setAiSettings(cfg_.aiEnabled, cfg_.aiPlayer, cfg_.aiCandidateRadius);
 
@@ -136,14 +135,12 @@ void MainWindow::onCellClicked(int x, int y) {
         return;
     }
 
-    // Add mark item incrementally
     const engine::Player p = game_.board().get(c);
     const QRectF rect(x * cellSize_, y * cellSize_, cellSize_, cellSize_);
     auto* item = new MarkItem(p, rect);
     scene_->addItem(item);
     markItems_[c] = item;
 
-    // highlight
     if (lastMoveHighlight_) {
         lastMoveHighlight_->setRect(rect.adjusted(1, 1, -1, -1));
         lastMoveHighlight_->show();
@@ -174,7 +171,6 @@ void MainWindow::onUndoRequested() {
         }
     }
 
-    // update highlight
     if (game_.lastMove()) {
         const auto lm = game_.lastMove().value();
         const QRectF rect(lm.x * cellSize_, lm.y * cellSize_, cellSize_, cellSize_);
@@ -191,7 +187,6 @@ void MainWindow::onUndoRequested() {
 void MainWindow::onRedoRequested() {
     if (!game_.redo()) return;
 
-    // after redo, lastMove is the redone move
     if (game_.lastMove()) {
         const auto lm = game_.lastMove().value();
         if (markItems_.find(lm) == markItems_.end()) {
@@ -279,7 +274,6 @@ QRectF MainWindow::boardSceneRect() const {
         return QRectF(0, 0, r.width * cellSize_, r.height * cellSize_);
     }
 
-    // Infinite: bounding box of occupied + margin
     const auto occ = game_.board().occupied();
 
     int minX = 0, maxX = 0, minY = 0, maxY = 0;

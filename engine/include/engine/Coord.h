@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_COORD_H
 #define TIKTAKTOE_COORD_H
 #pragma once
@@ -41,7 +37,6 @@ namespace engine {
 
     struct CoordHash {
         std::size_t operator()(const Coord& c) const noexcept {
-            // Mix 2x32-bit into 64-bit and apply splitmix64-like mixing.
             std::uint64_t x = static_cast<std::uint64_t>(static_cast<std::uint32_t>(c.x));
             std::uint64_t y = static_cast<std::uint64_t>(static_cast<std::uint32_t>(c.y));
             std::uint64_t z = (x << 32) ^ y;
@@ -55,7 +50,7 @@ namespace engine {
         }
     };
 
-} // namespace engine
+}
 
 namespace std {
     template<>
@@ -64,6 +59,6 @@ namespace std {
             return engine::CoordHash{}(c);
         }
     };
-} // namespace std
+}
 
-#endif //TIKTAKTOE_COORD_H
+#endif

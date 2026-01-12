@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_AI_H
 #define TIKTAKTOE_AI_H
 #pragma once
@@ -18,7 +14,7 @@ namespace engine {
         struct Settings {
             int candidateRadius = 2;
             std::size_t maxCandidates = 600;
-            unsigned seed = 0; // 0 => random_device
+            unsigned seed = 0;
         };
 
         explicit SimpleAI(Settings s = {});
@@ -32,6 +28,6 @@ namespace engine {
         long long evalMove(const GameState& state, Player p, Coord c) const;
     };
 
-} // namespace engine
+}
 
-#endif //TIKTAKTOE_AI_H
+#endif

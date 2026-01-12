@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_PLAYER_H
 #define TIKTAKTOE_PLAYER_H
 #pragma once
@@ -33,6 +29,6 @@ namespace engine {
         }
     }
 
-} // namespace engine
+}
 
-#endif //TIKTAKTOE_PLAYER_H
+#endif

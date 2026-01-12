@@ -25,7 +25,6 @@ Contribution evaluateRun(const std::vector<int>& w, const RuleSet& rules) {
 
     switch (rules.lineMode) {
         case LineLengthMode::ExactN: {
-            // ExactN: counts only maximal run exactly N (run length must be exactly N)
             if (R == N) {
                 c.lines = 1;
                 if (rules.weightsEnabled) {
@@ -38,7 +37,6 @@ Contribution evaluateRun(const std::vector<int>& w, const RuleSet& rules) {
         case LineLengthMode::AtLeastN: {
             if (R >= N) {
                 if (rules.countSubsegments) {
-                    // CountSubsegments: number of N-windows inside the run
                     c.lines = R - N + 1;
                     if (rules.weightsEnabled) {
                         std::vector<long long> prefix(static_cast<std::size_t>(R) + 1, 0);
@@ -53,7 +51,6 @@ Contribution evaluateRun(const std::vector<int>& w, const RuleSet& rules) {
                         c.score = s;
                     }
                 } else {
-                    // Single run counts as one line
                     c.lines = 1;
                     if (rules.weightsEnabled) {
                         c.score = sumWeights() * R;
@@ -83,7 +80,7 @@ void gatherSide(const IBoard& board,
     }
 }
 
-} // namespace
+}
 
 MoveDelta Scoring::computeMoveDelta(const IBoard& board, Coord c, Player p, const RuleSet& rules) {
     MoveDelta total;
@@ -112,7 +109,6 @@ MoveDelta Scoring::computeMoveDelta(const IBoard& board, Coord c, Player p, cons
         mergedW.clear();
         mergedW.reserve(leftW.size() + 1 + rightW.size());
 
-        // leftW collected near->far, need far->near to form correct order
         for (auto it = leftW.rbegin(); it != leftW.rend(); ++it) {
             mergedW.push_back(*it);
         }
@@ -133,4 +129,4 @@ MoveDelta Scoring::computeMoveDelta(const IBoard& board, Coord c, Player p, cons
     return total;
 }
 
-} // namespace engine
+}

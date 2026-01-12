@@ -19,7 +19,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 void SettingsPanel::buildUi() {
     auto* root = new QVBoxLayout(this);
 
-    // Board group
     auto* boardGroup = new QGroupBox("Board", this);
     auto* boardForm = new QFormLayout(boardGroup);
 
@@ -48,7 +47,6 @@ void SettingsPanel::buildUi() {
 
     root->addWidget(boardGroup);
 
-    // Rules group
     auto* rulesGroup = new QGroupBox("Rules", this);
     auto* rulesForm = new QFormLayout(rulesGroup);
 
@@ -105,7 +103,6 @@ void SettingsPanel::buildUi() {
 
     root->addWidget(rulesGroup);
 
-    // AI group
     auto* aiGroup = new QGroupBox("AI (optional)", this);
     auto* aiForm = new QFormLayout(aiGroup);
 
@@ -122,7 +119,6 @@ void SettingsPanel::buildUi() {
 
     root->addWidget(aiGroup);
 
-    // Buttons
     auto* btnRow = new QHBoxLayout();
     newGameBtn_ = new QPushButton("New Game", this);
     undoBtn_ = new QPushButton("Undo", this);
@@ -136,7 +132,6 @@ void SettingsPanel::buildUi() {
 
     root->addLayout(btnRow);
 
-    // Status/stats
     statusLabel_ = new QLabel(this);
     statusLabel_->setText("Ready");
     statusLabel_->setWordWrap(true);
@@ -149,7 +144,6 @@ void SettingsPanel::buildUi() {
     root->addWidget(statsLabel_);
     root->addStretch(1);
 
-    // Connections
     connect(topologyCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onTopologyChanged);
     connect(presetCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onPresetChanged);
 
@@ -173,7 +167,6 @@ void SettingsPanel::onTopologyChanged(int) {
 }
 
 void SettingsPanel::onPresetChanged(int idx) {
-    // 0:10, 1:20, 2:30, 3:custom
     if (idx == 0) { widthSpin_->setValue(10); heightSpin_->setValue(10); }
     if (idx == 1) { widthSpin_->setValue(20); heightSpin_->setValue(20); }
     if (idx == 2) { widthSpin_->setValue(30); heightSpin_->setValue(30); }
@@ -213,7 +206,6 @@ void SettingsPanel::updateUiEnabledStates() {
     const bool aiOn = (aiCombo_->currentIndex() != 0);
     aiRadiusSpin_->setEnabled(aiOn);
 
-    // CountSubsegments only meaningful for AtLeastN
     const bool atleast = (lineModeCombo_->currentIndex() == 0);
     countSubsegmentsCheck_->setEnabled(atleast);
     if (!atleast) countSubsegmentsCheck_->setChecked(false);
@@ -239,7 +231,6 @@ engine::RuleSet SettingsPanel::rulesFromUi() const {
 
     r.weightsEnabled = weightsCheck_->isChecked();
     r.targetScore = targetScoreSpin_->value();
-    // weightFunction stays default constant=1 (formula/table through config/CLI)
 
     r.maxMoves = maxMovesSpin_->value();
 
@@ -247,7 +238,6 @@ engine::RuleSet SettingsPanel::rulesFromUi() const {
     const bool budgetMode = (costModeCombo_->currentIndex() == 0);
     r.costMode = budgetMode ? engine::CostMode::CostFromBudget : engine::CostMode::CostFromScore;
     r.initialBudget = budgetSpin_->value();
-    // costFunction stays default constant=0 (formula/table through config/CLI)
 
     return r;
 }
@@ -258,7 +248,6 @@ void SettingsPanel::setRulesToUi(const engine::RuleSet& r) {
         topologyCombo_->setCurrentIndex(r.topology == engine::BoardTopology::Infinite ? 1 : 0);
     }
 
-    // preset: try to match
     {
         QSignalBlocker b(presetCombo_);
         int preset = 3;

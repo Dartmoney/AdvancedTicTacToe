@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_CELLVALUEFUNCTION_H
 #define TIKTAKTOE_CELLVALUEFUNCTION_H
 #pragma once
@@ -41,6 +37,6 @@ namespace engine {
 
     std::string toString(CellValueFunction::Type t);
 
-} // namespace engine
+}
 
-#endif //TIKTAKTOE_CELLVALUEFUNCTION_H
+#endif

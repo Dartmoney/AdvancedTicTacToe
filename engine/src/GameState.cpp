@@ -157,7 +157,6 @@ bool GameState::hasAnyLegalMove(Player p) const {
     }
 
     if (!board_->isFinite()) {
-        // infinite: can't scan all. assume there exists a move, but practical games should use move limit or other stop.
         return b >= 0;
     }
 
@@ -327,7 +326,6 @@ void GameState::finishByComparison(EndReason why) {
         if (x.lines > o.lines) { result_ = GameResult::WinX; return; }
         if (o.lines > x.lines) { result_ = GameResult::WinO; return; }
 
-        // tie-break
         if (rules_.weightsEnabled || rules_.moveCostsEnabled) {
             result_ = decideByScore();
             return;
@@ -413,4 +411,4 @@ std::string toString(EndReason r) {
     }
 }
 
-} // namespace engine
+}

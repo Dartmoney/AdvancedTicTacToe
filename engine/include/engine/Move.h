@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_MOVE_H
 #define TIKTAKTOE_MOVE_H
 #pragma once
@@ -16,6 +12,5 @@ namespace engine {
         int cost = 0;
     };
 
-} // namespace engine
-
-#endif //TIKTAKTOE_MOVE_H
+}
+#endif

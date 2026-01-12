@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_BOARDVIEW_H
 #define TIKTAKTOE_BOARDVIEW_H
 #pragma once
@@ -16,7 +12,6 @@ public:
     void setCellSize(int px);
     int cellSize() const { return cellSize_; }
 
-    // finite bounds used for click validation; if width/height == 0 => infinite
     void setFiniteBounds(int width, int height);
 
     void resetViewToRect(const QRectF& rect);
@@ -40,4 +35,4 @@ private:
     QPoint panStart_;
 };
 
-#endif //TIKTAKTOE_BOARDVIEW_H
+#endif

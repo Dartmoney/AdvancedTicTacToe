@@ -1,7 +1,3 @@
-//
-// Created by imako on 08.01.2026.
-//
-
 #ifndef TIKTAKTOE_GAMESTATE_H
 #define TIKTAKTOE_GAMESTATE_H
 #pragma once
@@ -20,7 +16,7 @@ namespace engine {
 struct PlayerStats {
     long long score = 0;
     int lines = 0;
-    long long budget = 0; // if budget mode; negative means unlimited in this engine
+    long long budget = 0;
 };
 
 enum class GameResult { InProgress, Draw, WinX, WinO };
@@ -118,6 +114,5 @@ private:
 std::string toString(GameResult r);
 std::string toString(EndReason r);
 
-} // namespace engine
-
-#endif //TIKTAKTOE_GAMESTATE_H
+}
+#endif
