@@ -22,10 +22,6 @@
 namespace engine {
 namespace {
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Утилиты и "внутренние" структуры симуляции
-// ─────────────────────────────────────────────────────────────────────────────
-
 constexpr long long NEG_INF = (std::numeric_limits<long long>::min() / 4);
 
 struct SimPlayerState {
@@ -87,8 +83,6 @@ std::unique_ptr<IBoard> cloneBoard(const IBoard& src) {
     return dst;
 }
 
-// Генерация кандидатов вокруг занятых клеток (аналогично GameState::generateCandidateMoves,
-// но работает по любому IBoard и для симуляций).
 std::vector<Coord> neighborhoodCandidates(const IBoard& board, Coord ref, int radius, std::size_t maxCandidates) {
     std::vector<Coord> out;
     if (radius < 0) radius = 0;
@@ -144,25 +138,17 @@ std::vector<Coord> allEmptyFinite(const IBoard& board) {
     return out;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Оценка "потенциала линии" для классики/угроз (без полного minimax)
-// ─────────────────────────────────────────────────────────────────────────────
-
 struct LinePotential {
-    bool canWin = false;       // если поставить сюда — получится линия >= N
-    int bestLen = 1;           // максимальная длина после постановки
-    int bestOpenEnds = 0;      // 0/1/2 открытых конца у лучшей линии
-    long long value = 0;       // суммарная ценность угроз по 4 направлениям
+    bool canWin = false;
+    int bestLen = 1;
+    int bestOpenEnds = 0;
+    long long value = 0;
 };
 
-// Важно: функция рассчитана под "классическую" угрозу (континьюс-отрезки).
-// Она не учитывает "дырки" вида XX_XX. Это компенсируется 2-ply + тем, что на практике
-// такие угрозы всё равно проявляются через лучшие ответы.
 long long directionValue(int len, int openEnds, int N) {
     if (len <= 0) return 0;
     if (len >= N) return 1'000'000'000'000LL;
 
-    // База растёт полиномиально, чтобы не взрываться при больших N.
     const long long l = static_cast<long long>(len);
     const long long base = l * l * l * l; // l^4
 
@@ -225,16 +211,11 @@ LinePotential computePotentialAtEmptyCell(const IBoard& board, const RuleSet& ru
     return pot;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Режимы оценки: Classic vs ScoreLike
-// ─────────────────────────────────────────────────────────────────────────────
-
 enum class AiMode { Classic, ScoreLike };
 
 AiMode selectMode(const RuleSet& rules) {
     if (rules.classicWin) return AiMode::Classic;
     if (rules.weightsEnabled || rules.maximizeLines) return AiMode::ScoreLike;
-    // если никакие цели не включены — всё равно играем "как классика" (угрозами)
     return AiMode::Classic;
 }
 
@@ -244,17 +225,14 @@ long long budgetPenalty(const RuleSet& rules, long long budget, int cost, long l
 
     long long p = static_cast<long long>(cost) * baseMul;
 
-    // Если бюджет конечный и стоимость "съедает" заметную долю — штрафуем сильнее.
     if (budget >= 0) {
-        const long long ratio = (static_cast<long long>(cost) * 100) / (budget + 1); // 0..100+
-        p += (p * ratio) / 100; // до ~2x и больше, если cost>budget (но такой ход отфильтруем как illegal)
+        const long long ratio = (static_cast<long long>(cost) * 100) / (budget + 1);
+        p += (p * ratio) / 100;
     }
     return p;
 }
 
 long long distancePenalty(const IBoard& board, Coord c, Coord ref, long long mul) {
-    // На finite и infinite одинаково: AI любит держаться около активной зоны.
-    // Если хочется "центровую" стратегию — ref можно делать центром поля.
     (void)board;
     return manhattan(c, ref) * mul;
 }
@@ -269,13 +247,9 @@ long long evalClassicMove(const IBoard& board,
 
     const int cost = costAt(rules, c);
 
-    // Своё усиление и блок угроз противника считаем отдельно.
     const LinePotential myPot = computePotentialAtEmptyCell(board, rules, p, c);
     const LinePotential opPot = computePotentialAtEmptyCell(board, rules, other(p), c);
 
-    // Большие константы подобраны так, чтобы:
-    // - "выиграть сейчас" > "всё остальное"
-    // - "заблокировать мгновенный проигрыш" тоже очень важно
     constexpr long long WIN_NOW   = 9'000'000'000'000LL;
     constexpr long long BLOCK_NOW = 8'000'000'000'000LL;
 
@@ -322,7 +296,6 @@ long long evalScoreMove(const IBoard& board,
         effScoreDelta -= cost;
     }
 
-    // TargetScore — мгновенная победа по очкам
     if (rules.weightsEnabled && rules.targetScore > 0) {
         const long long newScore = self.score + effScoreDelta;
         if (newScore >= rules.targetScore) {
@@ -332,35 +305,26 @@ long long evalScoreMove(const IBoard& board,
 
     long long s = 0;
 
-    // Линии (если maximizeLines включён, линии — основная цель партии)
     const long long lineW = rules.maximizeLines ? 1'000'000LL : 300'000LL;
     s += static_cast<long long>(d.linesDelta) * lineW;
 
-    // Очки (weightsEnabled). Масштабируем, чтобы сопоставить с "линиями".
     if (rules.weightsEnabled) {
         const long long scoreW = (rules.targetScore > 0 ? 50'000LL : 12'000LL);
         s += effScoreDelta * scoreW;
     }
 
-    // Небольшой "классический" компонент: помогает строить будущие линии даже если сейчас delta=0.
-    // (Особенно полезно при больших N)
     const LinePotential myPot = computePotentialAtEmptyCell(board, rules, p, c);
     const LinePotential opPot = computePotentialAtEmptyCell(board, rules, other(p), c);
 
     s += myPot.value * 2;
-    s += opPot.value * 1; // чуть-чуть за блокировку будущих угроз
-
-    // Стоимость хода при бюджетном режиме: в score-режиме штрафуем мягче, чем в классике.
-    // (В "игре на очки" иногда выгодно заплатить дороже ради большого gain)
+    s += opPot.value * 1;
     s -= budgetPenalty(rules, self.budget, cost, 40'000);
 
-    // Держаться ближе к активной зоне
     s -= distancePenalty(board, c, ref, 300);
 
     return s;
 }
 
-// Унифицированная оценка (в зависимости от режима)
 long long evalMoveByMode(const IBoard& board,
                          const RuleSet& rules,
                          AiMode mode,
@@ -373,10 +337,6 @@ long long evalMoveByMode(const IBoard& board,
     }
     return evalScoreMove(board, rules, p, c, self, ref);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Идеальная классика 3x3: minimax (только для N=3, без очков/стоимости)
-// ─────────────────────────────────────────────────────────────────────────────
 
 Player winner3x3(const std::array<Player, 9>& b) {
     const int lines[8][3] = {
@@ -464,20 +424,13 @@ bool isPerfect3x3Case(const GameState& state, const RuleSet& rules) {
     if (!rules.classicWin) return false;
     if (rules.N != 3) return false;
 
-    // minimax реализован только для "чистой" классики без очков/стоимости,
-    // иначе функция выигрыша меняется.
     if (rules.weightsEnabled) return false;
     if (rules.moveCostsEnabled) return false;
 
     return true;
 }
 
-} // namespace
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Реализация SimpleAI
-// ─────────────────────────────────────────────────────────────────────────────
-
+}
 SimpleAI::SimpleAI(Settings s) : s_(s) {
     if (s_.seed == 0) {
         std::random_device rd;
@@ -493,12 +446,10 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
     const RuleSet& rules = state.rules();
     const AiMode mode = selectMode(rules);
 
-    // Идеальная игра на 3x3, чтобы AI не проигрывал и умел играть вничью.
     if (s_.enablePerfectClassic3x3 && isPerfect3x3Case(state, rules)) {
         return choosePerfectClassic3x3(state, aiPlayer);
     }
 
-    // Копируем доску (чтобы безопасно симулировать ходы в 2-ply без модификации GameState)
     auto boardPtr = cloneBoard(state.board());
     IBoard& board = *boardPtr;
 
@@ -507,13 +458,10 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
     const SimPlayerState aiS = simStatsFrom(state, aiPlayer);
     const SimPlayerState opS = simStatsFrom(state, opp);
 
-    // "Центр действия": если есть lastMove — тянем игру туда, иначе в центр поля/0,0
     Coord ref = state.lastMove().value_or(defaultRef(board));
 
-    // 1) Сгенерировать кандидатов для AI
     std::vector<Coord> cand = neighborhoodCandidates(board, ref, s_.candidateRadius, s_.maxCandidates);
 
-    // 2) Оставить только легальные
     std::vector<Coord> legal;
     legal.reserve(cand.size());
     for (const auto& c : cand) {
@@ -522,8 +470,6 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
         }
     }
 
-    // 3) Fallback: если finite и вокруг занятых ничего не подошло (например, из-за бюджета) —
-    //    просканируем всё поле.
     if (legal.empty() && board.isFinite()) {
         auto all = allEmptyFinite(board);
         Coord center = defaultRef(board);
@@ -547,7 +493,6 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
         }
     }
 
-    // 4) Infinite fallback: если совсем нет — попробуем в ближней окрестности ref расширяясь
     if (legal.empty() && !board.isFinite()) {
         bool found = false;
         for (int r = 0; r <= 8 && !found; ++r) {
@@ -566,7 +511,6 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
 
     if (legal.empty()) return std::nullopt;
 
-    // 5) Быстрая оценка всех кандидатов
     struct ScoredMove {
         Coord c{};
         long long score = NEG_INF;
@@ -584,18 +528,15 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
         return a.score > b.score;
     });
 
-    // Ограничим число рассматриваемых "глубоких" ходов
     if (s_.maxTopMoves > 0 && scored.size() > s_.maxTopMoves) {
         scored.resize(s_.maxTopMoves);
     }
 
-    // Небольшой шум для "не одинаковой" игры при равных оценках
     std::uniform_int_distribution<int> noise(0, 9999);
 
     long long bestFinal = NEG_INF;
     std::optional<Coord> best;
 
-    // Если 2-ply отключён — просто берём лучший по эвристике
     if (!s_.enableTwoPly) {
         for (const auto& m : scored) {
             long long s = m.score + noise(rng_);
@@ -607,19 +548,15 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
         return best;
     }
 
-    // 6) 2-ply: для каждого хода AI смотрим лучший ответ противника
     for (const auto& m : scored) {
         const Coord myMove = m.c;
 
-        // Симулируем постановку AI
-        if (!board.set(myMove, aiPlayer)) continue; // на всякий случай
-        // RAII-откат
+        if (!board.set(myMove, aiPlayer)) continue;
         struct Guard {
             IBoard& b; Coord c;
             ~Guard() { b.clear(c); }
         } guard{board, myMove};
 
-        // Сгенерируем ответы противника вокруг "последнего" хода
         std::vector<Coord> oppCand = neighborhoodCandidates(board, myMove, s_.candidateRadius, s_.maxCandidates);
 
         std::vector<ScoredMove> oppScored;
@@ -632,9 +569,6 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
         }
 
         if (oppScored.empty()) {
-            // Противник не нашёл легальный ответ в нашей выборке.
-            // (В реальности на infinite может существовать ход далеко, но мы сознательно ограничиваемся окрестностью.)
-            // В таком случае просто считаем, что "ответ слабый".
             long long final = m.score + noise(rng_);
             if (!best || final > bestFinal) {
                 bestFinal = final;
@@ -651,10 +585,8 @@ std::optional<Coord> SimpleAI::chooseMove(const GameState& state, Player aiPlaye
             oppScored.resize(s_.maxOpponentReplies);
         }
 
-        // Лучший ответ противника (с его точки зрения)
         const long long oppBest = oppScored.front().score;
 
-        // Чем классичнее режим — тем сильнее мы боимся ответа противника (оборона важнее).
         const long long defenseMul = (mode == AiMode::Classic ? 2 : 1);
 
         long long final = m.score - oppBest * defenseMul;

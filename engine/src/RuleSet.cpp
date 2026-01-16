@@ -20,7 +20,6 @@ std::vector<std::string> RuleSet::validateAndFix() {
             height = 1;
         }
     } else {
-        // Infinite ignores width/height as bounds
         if (width < 0) width = 0;
         if (height < 0) height = 0;
     }

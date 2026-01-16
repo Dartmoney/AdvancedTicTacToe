@@ -7,8 +7,6 @@
 
 namespace engine {
 
-    // Move теперь class, и конструкторы сделаны именно перегрузками,
-    // а не default-аргументом (как ты и попросил).
     class Move final {
     public:
         Coord coord{};

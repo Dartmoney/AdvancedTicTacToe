@@ -55,13 +55,11 @@ void SettingsPanel::buildUi() {
     nSpin_->setValue(5);
     rulesForm->addRow("N (line length):", nSpin_);
 
-    classicCheck_ = new QCheckBox("Classic first-to-N win", rulesGroup);
-    classicCheck_->setChecked(false);
-    rulesForm->addRow("", classicCheck_);
-
-    maximizeLinesCheck_ = new QCheckBox("Maximize number of N-lines (new rule)", rulesGroup);
-    maximizeLinesCheck_->setChecked(true);
-    rulesForm->addRow("", maximizeLinesCheck_);
+    winRuleCombo_ = new QComboBox(rulesGroup);
+    winRuleCombo_->addItem("Classic first-to-N win");        // index 0
+    winRuleCombo_->addItem("Maximize number of N-lines");    // index 1
+    winRuleCombo_->setCurrentIndex(1); // по умолчанию новый режим
+    rulesForm->addRow("Win rule:", winRuleCombo_);
 
     lineModeCombo_ = new QComboBox(rulesGroup);
     lineModeCombo_->addItem("AtLeastN");
@@ -146,9 +144,9 @@ void SettingsPanel::buildUi() {
 
     connect(topologyCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onTopologyChanged);
     connect(presetCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onPresetChanged);
+    connect(winRuleCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &SettingsPanel::onRuleTogglesChanged);
 
-    connect(classicCheck_, &QCheckBox::toggled, this, &SettingsPanel::onRuleTogglesChanged);
-    connect(maximizeLinesCheck_, &QCheckBox::toggled, this, &SettingsPanel::onRuleTogglesChanged);
     connect(weightsCheck_, &QCheckBox::toggled, this, &SettingsPanel::onRuleTogglesChanged);
     connect(costsCheck_, &QCheckBox::toggled, this, &SettingsPanel::onRuleTogglesChanged);
     connect(countSubsegmentsCheck_, &QCheckBox::toggled, this, &SettingsPanel::onRuleTogglesChanged);
@@ -221,8 +219,10 @@ engine::RuleSet SettingsPanel::rulesFromUi() const {
     r.height = heightSpin_->value();
 
     r.N = nSpin_->value();
-    r.classicWin = classicCheck_->isChecked();
-    r.maximizeLines = maximizeLinesCheck_->isChecked();
+    const int mode = winRuleCombo_->currentIndex(); // 0 classic, 1 maximize
+    r.classicWin = (mode == 0);
+    r.maximizeLines = (mode == 1);
+
 
     const bool atleast = (lineModeCombo_->currentIndex() == 0);
     r.lineMode = atleast ? engine::LineLengthMode::AtLeastN : engine::LineLengthMode::ExactN;
@@ -272,13 +272,11 @@ void SettingsPanel::setRulesToUi(const engine::RuleSet& r) {
     }
 
     {
-        QSignalBlocker b(classicCheck_);
-        classicCheck_->setChecked(r.classicWin);
+        QSignalBlocker b(winRuleCombo_);
+        // приоритет: если maximizeLines true — ставим его, иначе classic
+        winRuleCombo_->setCurrentIndex(r.maximizeLines ? 1 : 0);
     }
-    {
-        QSignalBlocker b(maximizeLinesCheck_);
-        maximizeLinesCheck_->setChecked(r.maximizeLines);
-    }
+
 
     {
         QSignalBlocker b(lineModeCombo_);

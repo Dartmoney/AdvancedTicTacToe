@@ -52,8 +52,7 @@ private:
     QSpinBox* heightSpin_ = nullptr;
 
     QSpinBox* nSpin_ = nullptr;
-    QCheckBox* classicCheck_ = nullptr;
-    QCheckBox* maximizeLinesCheck_ = nullptr;
+    QComboBox* winRuleCombo_ = nullptr;
     QComboBox* lineModeCombo_ = nullptr;
     QCheckBox* countSubsegmentsCheck_ = nullptr;
 

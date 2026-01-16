@@ -10,11 +10,6 @@
 
 namespace engine {
 
-// ВАЖНО:
-// - Coord теперь полноценный class (а не struct)
-// - Операторы перегружены как методы класса (а не свободные функции)
-// - hash тоже оформлен как class (CoordHash), + std::hash специализация остаётся
-//   (чтобы не менять весь код, где Coord используется ключом в unordered_*)
 
 class Coord final {
 public:
@@ -55,7 +50,6 @@ inline std::ostream& operator<<(std::ostream& os, const Coord& c) {
     return os;
 }
 
-// Hash тоже сделан class (как ты просил "всё классами").
 // splitmix64 хорош как быстрый и стабильный миксер для двух int.
 class CoordHash final {
 public:
