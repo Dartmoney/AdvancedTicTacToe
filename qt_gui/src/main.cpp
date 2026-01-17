@@ -45,7 +45,8 @@ int main(int argc, char** argv) {
     parser.addOption(QCommandLineOption("cost-mode", "Move cost mode: score|budget.", "score|budget"));
     parser.addOption(QCommandLineOption("budget", "Initial budget per player (cost-mode=budget). Use -1 for unlimited.", "int"));
 
-    parser.addOption(QCommandLineOption("ai", "AI mode: none|X|O (which side is controlled by AI).", "none|X|O"));
+    parser.addOption(QCommandLineOption("ai", "AI mode: none|X|O|both (both = AI vs AI).", "none|X|O|both"));
+
     parser.addOption(QCommandLineOption("ai-radius", "AI search radius around existing moves (default 2).", "int"));
 
     parser.addOption(QCommandLineOption("cell-size", "Cell size in pixels (default 40).", "int"));

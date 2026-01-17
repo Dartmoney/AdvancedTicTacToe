@@ -26,14 +26,15 @@ public:
     int aiCandidateRadius() const;
 
     void setAiSettings(bool enabled, engine::Player aiPlayer, int radius);
-
+    void setNextTurnVisible(bool visible);
+    void setNextTurnEnabled(bool enabled);
     void updateFromGameState(const engine::GameState& state);
-
     signals:
         void newGameRequested();
     void undoRequested();
     void redoRequested();
     void resetViewRequested();
+    void nextTurnRequested();
 
 private slots:
     void onTopologyChanged(int);
@@ -72,7 +73,7 @@ private:
     QPushButton* undoBtn_ = nullptr;
     QPushButton* redoBtn_ = nullptr;
     QPushButton* resetViewBtn_ = nullptr;
-
+    QPushButton* nextTurnBtn_ = nullptr;
     QLabel* statusLabel_ = nullptr;
     QLabel* statsLabel_ = nullptr;
 };

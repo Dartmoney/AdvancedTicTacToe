@@ -27,6 +27,7 @@ private slots:
     void onNewGameRequested();
     void onUndoRequested();
     void onRedoRequested();
+    void onNextTurnRequested();
     void onResetViewRequested();
 
 private:
@@ -34,9 +35,9 @@ private:
     void rebuildScene();
     void syncSceneWithBoard();
     void updateUi();
-
+    bool isAiVsAiModeActive() const;
     void ensureAiMoveIfNeeded();
-    void performAiMove();
+    void performAiMove(engine::Player aiPlayer);
 
     void updateSceneRectForTopology();
     QRectF boardSceneRect() const;

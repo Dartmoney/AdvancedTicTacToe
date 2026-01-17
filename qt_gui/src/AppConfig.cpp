@@ -36,6 +36,10 @@ engine::Player parsePlayerXO(const QString& s, bool* ok = nullptr) {
     const QString t = s.trimmed().toUpper();
     if (t == "X") { if (ok) *ok = true; return engine::Player::X; }
     if (t == "O") { if (ok) *ok = true; return engine::Player::O; }
+    if (t == "BOTH" || t == "AI" || t == "AIVSAI" || t == "AI VS AI") {
+        if (ok) *ok = true;
+        return engine::Player::None; // convention: enabled + None => AI vs AI
+    }
     if (ok) *ok = false;
     return engine::Player::O;
 }
@@ -266,8 +270,11 @@ AppConfig AppConfig::fromParser(const QCommandLineParser& parser) {
         } else if (mode == "o") {
             cfg.aiEnabled = true;
             cfg.aiPlayer = engine::Player::O;
+        } else if (mode == "both" || mode == "aivsai" || mode == "ai-vs-ai") {
+            cfg.aiEnabled = true;
+            cfg.aiPlayer = engine::Player::None; // convention: enabled + None => AI vs AI
         } else {
-            cfg.warnings << "--ai invalid. Use none|X|O.";
+            cfg.warnings << "--ai invalid. Use none|X|O|both.";
         }
     }
 

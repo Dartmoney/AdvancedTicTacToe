@@ -37,6 +37,7 @@ MainWindow::MainWindow(const AppConfig& cfg, QWidget* parent)
     connect(settings_, &SettingsPanel::newGameRequested, this, &MainWindow::onNewGameRequested);
     connect(settings_, &SettingsPanel::undoRequested, this, &MainWindow::onUndoRequested);
     connect(settings_, &SettingsPanel::redoRequested, this, &MainWindow::onRedoRequested);
+    connect(settings_, &SettingsPanel::nextTurnRequested, this, &MainWindow::onNextTurnRequested);
     connect(settings_, &SettingsPanel::resetViewRequested, this, &MainWindow::onResetViewRequested);
 
     settings_->setRulesToUi(cfg_.rules);
@@ -120,9 +121,22 @@ void MainWindow::syncSceneWithBoard() {
 
 void MainWindow::updateUi() {
     settings_->updateFromGameState(game_);
+
+    const bool aiVsAi = isAiVsAiModeActive();
+    settings_->setNextTurnVisible(aiVsAi);
+    settings_->setNextTurnEnabled(aiVsAi && !game_.isGameOver());
+}
+bool MainWindow::isAiVsAiModeActive() const {
+    // Convention: aiEnabled=true + aiPlayer=None => both sides are controlled by AI.
+    return aiEnabled_ && (aiPlayer_ == engine::Player::None);
 }
 
 void MainWindow::onCellClicked(int x, int y) {
+    if (isAiVsAiModeActive()) {
+        statusBar()->showMessage("AI vs AI mode: use 'Next Turn' to advance.", 2000);
+        return;
+    }
+
     if (aiEnabled_ && game_.currentPlayer() == aiPlayer_) {
         statusBar()->showMessage("AI turn: input ignored.", 1500);
         return;
@@ -216,20 +230,85 @@ void MainWindow::onRedoRequested() {
 void MainWindow::onResetViewRequested() {
     view_->resetViewToRect(scene_->sceneRect());
 }
+void MainWindow::onNextTurnRequested() {
+    // "AI vs AI" в твоём проекте = AI включён, но aiPlayer() возвращает None
+    // (см. SettingsPanel::aiPlayer()).
+    if (!(aiEnabled_ && aiPlayer_ == engine::Player::None)) {
+        statusBar()->showMessage("Next Turn is available only in AI vs AI mode.", 2000);
+        return;
+    }
+    if (game_.isGameOver()) {
+        statusBar()->showMessage("Game is already over.", 2000);
+        return;
+    }
+
+    // Через event loop, чтобы UI не подвисал и было похоже на остальные AI-вызовы
+    QTimer::singleShot(0, this, [this]() {
+        if (!(aiEnabled_ && aiPlayer_ == engine::Player::None)) return;
+        if (game_.isGameOver()) return;
+
+        const engine::Player p = game_.currentPlayer();
+
+        auto mv = ai_.chooseMove(game_, p);
+        if (!mv) {
+            statusBar()->showMessage("AI: no legal move found.", 2000);
+            return;
+        }
+
+        const auto res = game_.tryMakeMove(*mv);
+        if (!res.ok) {
+            statusBar()->showMessage(
+                QString("AI move failed: %1").arg(QString::fromStdString(res.message)),
+                2000
+            );
+            return;
+        }
+
+        const engine::Coord c = *mv;
+        const engine::Player placed = game_.board().get(c);
+        const QRectF rect(c.x * cellSize_, c.y * cellSize_, cellSize_, cellSize_);
+
+        auto* item = new MarkItem(placed, rect);
+        scene_->addItem(item);
+        markItems_[c] = item;
+
+        if (lastMoveHighlight_) {
+            lastMoveHighlight_->setRect(rect.adjusted(1, 1, -1, -1));
+            lastMoveHighlight_->show();
+        }
+
+        updateSceneRectForTopology();
+        updateUi();
+
+        if (game_.isGameOver()) {
+            GameOverDialog dlg(game_, this);
+            dlg.exec();
+        }
+    });
+}
 
 void MainWindow::ensureAiMoveIfNeeded() {
     if (!aiEnabled_) return;
     if (game_.isGameOver()) return;
+
+    // In AI vs AI mode we advance moves manually with the "Next Turn" button.
+    if (isAiVsAiModeActive()) return;
+
     if (aiPlayer_ == engine::Player::None) return;
     if (game_.currentPlayer() != aiPlayer_) return;
 
-    QTimer::singleShot(0, this, [this]() { performAiMove(); });
+    QTimer::singleShot(0, this, [this]() { performAiMove(aiPlayer_); });
 }
 
-void MainWindow::performAiMove() {
+void MainWindow::performAiMove(engine::Player aiPlayer) {
+    if (!aiEnabled_) return;
+    if (game_.isGameOver()) return;
+    if (aiPlayer == engine::Player::None) return;
+    if (game_.currentPlayer() != aiPlayer) return;
+
+    auto mv = ai_.chooseMove(game_, aiPlayer);
     if (!aiEnabled_ || game_.isGameOver() || game_.currentPlayer() != aiPlayer_) return;
 
-    auto mv = ai_.chooseMove(game_, aiPlayer_);
     if (!mv) {
         statusBar()->showMessage("AI: no legal move found.", 2000);
         return;

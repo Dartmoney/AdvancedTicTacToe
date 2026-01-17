@@ -21,7 +21,7 @@ void SettingsPanel::buildUi() {
 
     auto* boardGroup = new QGroupBox("Board", this);
     auto* boardForm = new QFormLayout(boardGroup);
-
+    
     topologyCombo_ = new QComboBox(boardGroup);
     topologyCombo_->addItem("Finite");
     topologyCombo_->addItem("Infinite");
@@ -108,6 +108,7 @@ void SettingsPanel::buildUi() {
     aiCombo_->addItem("Human vs Human");
     aiCombo_->addItem("AI plays X");
     aiCombo_->addItem("AI plays O");
+    aiCombo_->addItem("AI vs AI");
     aiForm->addRow("Mode:", aiCombo_);
 
     aiRadiusSpin_ = new QSpinBox(aiGroup);
@@ -122,12 +123,13 @@ void SettingsPanel::buildUi() {
     undoBtn_ = new QPushButton("Undo", this);
     redoBtn_ = new QPushButton("Redo", this);
     resetViewBtn_ = new QPushButton("Reset View", this);
-
+    nextTurnBtn_ = new QPushButton("Next Turn", this);
     btnRow->addWidget(newGameBtn_);
     btnRow->addWidget(undoBtn_);
     btnRow->addWidget(redoBtn_);
     btnRow->addWidget(resetViewBtn_);
-
+    btnRow->addWidget(nextTurnBtn_);
+    nextTurnBtn_->setVisible(false);
     root->addLayout(btnRow);
 
     statusLabel_ = new QLabel(this);
@@ -153,7 +155,7 @@ void SettingsPanel::buildUi() {
     connect(lineModeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onRuleTogglesChanged);
     connect(costModeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onCostModeChanged);
     connect(aiCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsPanel::onAiModeChanged);
-
+    connect(nextTurnBtn_, &QPushButton::clicked, this, &SettingsPanel::nextTurnRequested);
     connect(newGameBtn_, &QPushButton::clicked, this, &SettingsPanel::newGameRequested);
     connect(undoBtn_, &QPushButton::clicked, this, &SettingsPanel::undoRequested);
     connect(redoBtn_, &QPushButton::clicked, this, &SettingsPanel::redoRequested);
@@ -163,7 +165,13 @@ void SettingsPanel::buildUi() {
 void SettingsPanel::onTopologyChanged(int) {
     updateUiEnabledStates();
 }
+void SettingsPanel::setNextTurnVisible(bool visible) {
+    if (nextTurnBtn_) nextTurnBtn_->setVisible(visible);
+}
 
+void SettingsPanel::setNextTurnEnabled(bool enabled) {
+    if (nextTurnBtn_) nextTurnBtn_->setEnabled(enabled);
+}
 void SettingsPanel::onPresetChanged(int idx) {
     if (idx == 0) { widthSpin_->setValue(10); heightSpin_->setValue(10); }
     if (idx == 1) { widthSpin_->setValue(20); heightSpin_->setValue(20); }
@@ -338,7 +346,8 @@ void SettingsPanel::setAiSettings(bool enabled, engine::Player aiPlayer, int rad
         aiCombo_->setCurrentIndex(0);
     } else {
         if (aiPlayer == engine::Player::X) aiCombo_->setCurrentIndex(1);
-        else aiCombo_->setCurrentIndex(2);
+        else if (aiPlayer == engine::Player::O) aiCombo_->setCurrentIndex(2);
+        else aiCombo_->setCurrentIndex(3); // AI vs AI
     }
 
     QSignalBlocker b2(aiRadiusSpin_);
